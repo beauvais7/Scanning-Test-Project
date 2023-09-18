@@ -1,0 +1,7 @@
+temp_*
+.env
+venv/
+pytest-report.xml
+vendors/
+__pycache__/
+.vscode/
