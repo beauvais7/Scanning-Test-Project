@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 #from requests import Response
+#from bs4 import BeautifulSoup
 #import requests
 #import json
 #import logging
 #import time
 
-from src.model.map_response import filter_results
+from src.model.map_response import NMapData
 from socket import *
 
 import nmap
 
 #RETRY = [429] + list(range(500, 600))
 #MAX_RETRIES = 4
-VALID_ENGINEES = {"IIS": "7",  "Nginx": "1.2"}
 
 class IPScanner():
     def __init__(self):
@@ -40,22 +40,32 @@ class IPScanner():
     def scan_given_ips(self, ips: list[str]):
         """Scan provided IPS for Engine Version"""
 
-        results: list[str] = []
-
+        results: list[NMapData] = []
         for ip in ips:
-            scan_results = filter_results(self.nm_scanner.scan(ip, '80-443', '-sV -O'), ip)
-            if scan_results:
-                if scan_results.keys() and scan_results.values() in VALID_ENGINEES:
-                    print(f'Yes. Found {scan_results} ')
-                else:
-                    print(scan_results)
-                    print(VALID_ENGINEES)
+            addr_info = self.nm_scanner.scan(ip, '80-443', '-sV -O')
+            if addr_info['scan'] == {}:
+                continue
+
+            protocol = ""
+
+            port_number = addr_info['scan'][ip]['tcp']
+            if 443 in port_number:
+                protocol = 443
+            elif 80 in port_number:
+                protocol = 80
+            
+            server_type = addr_info['scan'][ip]['tcp'][protocol]['product']
+            if 'unknown' in server_type:
+                print('Unable to determine Engine version or type.')
+                continue
 
         return
 
 
 if __name__ == "__main__":
-
+    #scan_web_pages('cisco.com')
+    #test_some()
+    #self.test()
     IPS = ['8.8.8.8']
     
     IPScanner().scan_given_ips(IPS)

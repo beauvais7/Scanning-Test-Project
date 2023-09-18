@@ -2,25 +2,28 @@
 
 from __future__ import annotations
 from typing import Any
-from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
-class NMapData:
-    scan: dict[str, Any]
-    ip_address: str
+def filter_results(results: dict[str, Any], ip_add: str) -> dict[str, str]:
+    """Filter nmap results"""
 
-    @classmethod
-    def from_results(cls, results: dict[str, Any], ip_add: str) -> NMapData:
-        """Build a data class from nmap results"""
-        filter_results = results["scan"][ip_add]["tcp"]
+    if results['scan'] == {}:
+        return
 
-        print(f'1. {filter_results}')
-        for result in filter_results:
-            print(f'2. {result}')
-            if '443' or '80' not in result:
-                return None
+    protocol = ""
+    port_number = results['scan'][ip_add]['tcp']
+    if 443 in port_number:
+        protocol = 443
+    elif 80 in port_number:
+        protocol = 80
+            
+    server_type = results['scan'][ip_add]['tcp'][protocol]['product']
+    if 'unknown' in server_type:
+        print('Unable to determine Engine version or type.')
+        return
 
-        return cls(
-            scan=results["scan"][ip_add]["tcp"]
-        )
+    else:
+        server_version = results['scan'][ip_add]['tcp'][protocol]['version']
+        server_results = {server_type: server_version}
+
+    return server_results
