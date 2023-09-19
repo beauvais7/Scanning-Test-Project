@@ -9,32 +9,42 @@ from __future__ import annotations
 from src.model.map_response import filter_results
 from socket import *
 
-import nmap
+#import nmap
 
 #RETRY = [429] + list(range(500, 600))
 #MAX_RETRIES = 4
 VALID_ENGINEES = {"IIS": "7",  "Nginx": "1.2"}
 
-class IPScanner():
-    def __init__(self):
-        self.nm_scanner = nmap.PortScanner()
 
-    def user_prompt():
-
-        program = True
-        while program:
-            print("Welcome!")
-            print("Instuctions:  ")
-        # welcome message
-        # description of program. 
-        # how to use program
-
-        #enforce checks by:
+       #enforce checks by:
             #IP
             #string, bool, etc. to not crash program
             #put in error outputs, retry logic maybe a few times before exit.
             #
-        return
+
+class IPScanner():
+    def __init__(self):
+        #self.nm_scanner = nmap.PortScanner()
+        self.user = socket
+
+    def user_prompt(self):
+        # Show User Menu, Save input
+        print('Welcome!')
+        print('Instructions: Enter an IP or set of IPs to scan. If multiple IPs, Ensure they are command separated.')
+        print('Valid entry example: 8.8.8.8, 8.8.8.9')
+
+        select_char = input("Enter IP here: ")
+
+        if not select_char:
+            print('No input entered. Exiting.')
+        
+        input_addresses: list[str] = []
+        """
+        program_okay = True
+        while not program_okay:
+            try:
+                if select_char
+        """
 
 
     def scan_given_ips(self, ips: list[str]):
@@ -56,6 +66,7 @@ class IPScanner():
 
 if __name__ == "__main__":
 
-    IPS = ['8.8.8.8']
+    #IPS = ['8.8.8.8']
     
-    IPScanner().scan_given_ips(IPS)
+    #IPScanner().scan_given_ips(IPS)
+    IPScanner().user_prompt()
