@@ -1,72 +1,70 @@
 from __future__ import annotations
-
-#from requests import Response
-#import requests
-#import json
-#import logging
-#import time
-
 from src.model.map_response import filter_results
+from src.model.validation import verify_ip_format
 from socket import *
 
-#import nmap
+import nmap
 
-#RETRY = [429] + list(range(500, 600))
-#MAX_RETRIES = 4
-VALID_ENGINEES = {"IIS": "7",  "Nginx": "1.2"}
+# Valid Engine Types
+VALID_ENGINEES = {"iis": "7.0",  "nginx": "1.2"}
 
-
-       #enforce checks by:
-            #IP
-            #string, bool, etc. to not crash program
-            #put in error outputs, retry logic maybe a few times before exit.
-            #
 
 class IPScanner():
     def __init__(self):
-        #self.nm_scanner = nmap.PortScanner()
-        self.user = socket
+        self.nm_scanner = nmap.PortScanner()
 
     def user_prompt(self):
+        """User Prompt to receive IP address."""
+        
         # Show User Menu, Save input
         print('Welcome!')
-        print('Instructions: Enter an IP or set of IPs to scan. If multiple IPs, Ensure they are command separated.')
-        print('Valid entry example: 8.8.8.8, 8.8.8.9')
+        print('Instructions: Enter an IP to scan.')
+        print('Valid entry example: 8.8.8.9')
 
+        # Get IP address from user
         select_char = input("Enter IP here: ")
 
-        if not select_char:
-            print('No input entered. Exiting.')
-        
-        input_addresses: list[str] = []
-        """
-        program_okay = True
-        while not program_okay:
+        while True:
             try:
-                if select_char
-        """
+                if verify_ip_format(select_char):
+                    print(f'Beginning scan on {select_char}')
 
+                    # Call scanning function
+                    results = self.scan_given_ips(select_char)
+                    print(f'Any results? : {results}')
+                    if results:
+                        return True
+                    if not results:
+                        return False
+            except:
+                print("Invalid entry. Please try again or close program by 'Ctrl C' ")
+                select_char = input("Enter IP here: ")
 
-    def scan_given_ips(self, ips: list[str]):
+    def scan_given_ips(self, ips: str) -> dict[str[dict[str, str]]]:
         """Scan provided IPS for Engine Version"""
 
-        results: list[str] = []
+        results: dict[str[dict[str, str]]] = {}
 
-        for ip in ips:
-            scan_results = filter_results(self.nm_scanner.scan(ip, '80-443', '-sV -O'), ip)
-            if scan_results:
-                if scan_results.keys() and scan_results.values() in VALID_ENGINEES:
-                    print(f'Yes. Found {scan_results} ')
-                else:
-                    print(scan_results)
-                    print(VALID_ENGINEES)
+        #for ip in ips:
 
-        return
+        scan_results = filter_results(self.nm_scanner.scan(ips, '80-443', '-sV'), ips)
+        if not scan_results:
+            return
 
+        #scan_results = {'nginx': '1.2.0'}
+        #scan_results = {'iis': '7.0.8'}
+        
+        for result in scan_results:
+            if result in VALID_ENGINEES:
+                version = scan_results.get(result)[0:3]
+                if version in VALID_ENGINEES.get(result):
+                    results[ips] = {result: version}
+            
+        return results
 
 if __name__ == "__main__":
 
-    #IPS = ['8.8.8.8']
+    #IPS = ['52.54.102.4']
     
     #IPScanner().scan_given_ips(IPS)
     IPScanner().user_prompt()
