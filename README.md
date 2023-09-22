@@ -12,3 +12,9 @@
 - To run the application, use python3 or python (whatever command works with your system), followed by: -m src.controller.ip_scanner
 - Example: python3 -m src.controller.ip_scanner
 
+**Potential Issues**
+
+- If you receieve issues running the program related to NMAP, ensure your PATH is set correctly in your environment variables.
+
+- If path is set correctly and still having issues, you will need to install nmap than map your PATH in your environment variables to the NMAP directory.
+
