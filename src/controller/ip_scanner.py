@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from src.model.map_response import filter_results
 from src.model.validation import verify_ip_format
 from src.model.map_response import strip_junk
+
+from src.util.format_response import clean_dict
 
 import socket
 
@@ -25,43 +28,59 @@ class IPScanner:
         print("Instructions: Enter an IP to scan.")
         print("Valid entry example: 8.8.8.9")
 
-        # Get IP address from user
         select_char = input("Enter IP here: ")
 
         while True:
             try:
                 if verify_ip_format(select_char):
                     print(f"Beginning scan on {select_char}")
-                    # Call scanning function
+
                     results = self.scan_given_ips(select_char)
-                    if results:
-                        print(f"Results for {select_char}. Direct Listing: {results}")
-                        return True
-                    if not results:
-                        print(
-                            f"Unable to find version match for provided {select_char}"
-                        )
-                        return False
-            except:
-                print("Invalid entry. Please try again or close program by 'Ctrl C' ")
+
+                    directory = ""
+
+                    for result in results:
+                        if "False" in results:
+                            directory = "False"
+                        elif "True" in results:
+                            directory = True
+
+                        if result:
+                            engine = clean_dict(result.keys())
+                            version = clean_dict(result.values())
+                            print(
+                                f"Results for {select_char}: Engine Type: {engine}, Engine Version: {version}. Direct Listing: {directory}"  # noqa: E501
+                            )
+                            return True
+
+                        else:
+                            print(
+                                f"Unable to determine Engine version or type for {select_char}"  # noqa: E501
+                            )
+                            return False
+
+            except:  # noqa: E722
+                print(
+                    "Invalid entry. Please try again or close program by 'Ctrl C' "
+                )  # noqa: E501
                 select_char = input("Enter IP here: ")
 
     def scan_given_ips(self, ips: str) -> tuple[dict[str, str], str]:
         """Scan provided IPS for Engine Version"""
 
-        results: dict[str, str] = {}
-
-        # for ip in ips:
-        scan_results = filter_results(self.nm_scanner.scan(ips, "80-443", "-sV"), ips)
+        scan_results = filter_results(
+            self.nm_scanner.scan(ips, "80-443", "-sV"), ips
+        )  # noqa: E501
         if not scan_results:
             return
 
         engine: dict[str, str] = {}
         port = ""
         for result in scan_results:
-            if type(result) == int:
+            if type(result) is int:
                 port = result
                 continue
+
             for key in result:
                 if key in VALID_ENGINEES:
                     version = result.get(key)[0:3]
@@ -70,14 +89,13 @@ class IPScanner:
 
         direct_listing = self.get_direct_listing(ips, port)
 
-        return results, direct_listing
+        return [engine, direct_listing]
 
-    def get_direct_listing(self, ip_addr: str, port: str) -> bool:
+    def get_direct_listing(self, ip_addr: str, port: str) -> str:
         """Check if index exists for website"""
 
         fqdn = socket.getfqdn(ip_addr)
 
-        # Function to strip bad url information
         domain_name = strip_junk(fqdn)
 
         hyper_link = ""
@@ -91,11 +109,14 @@ class IPScanner:
             web_results = requests.get(f"{hyper_link}{domain_name}")
 
             if web_results:
-                if ".index" in web_results.text:
-                    return True
+                if (
+                    "index" or "home.html" or "default.html" in web_results.text
+                ):  # noqa: E501
+                    return "True"
+
         except requests.exceptions.RequestException as err:
             if err:
-                return False
+                return "False"
 
 
 if __name__ == "__main__":

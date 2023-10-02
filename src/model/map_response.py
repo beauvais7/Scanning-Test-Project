@@ -4,7 +4,9 @@ from __future__ import annotations
 from typing import Any
 
 
-def filter_results(results: dict[str, Any], ip_add: str) -> tuple[dict[str, str], str]:
+def filter_results(
+    results: dict[str, Any], ip_add: str
+) -> tuple[dict[str, str], str]:  # noqa: E501
     """Filter nmap results"""
 
     if results["scan"] == {}:
@@ -19,7 +21,6 @@ def filter_results(results: dict[str, Any], ip_add: str) -> tuple[dict[str, str]
     elif 80 in port_number and port_number[80].get("product"):
         protocol = 80
     else:
-        print(f"Unable to determine Engine version or type for {ip_add}")
         exit()
 
     # Grab Server and Engine version
